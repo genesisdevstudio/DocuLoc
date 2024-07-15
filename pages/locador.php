@@ -37,7 +37,7 @@
       <?php require_once('.'.PATHURL.'pages/components/footer.php'); ?>
     </main>
 
-    <?php require_once('.'.PATHURL.'lib/include/footer_scripts-pages.php'); ?>
+    <?php require_once('.'.PATHURL.'lib/include/footer_scripts-externalforms.php'); ?>
     <?php require_once('.'.PATHURL.'lib/include/footer_scripts-locador.php'); ?>
   </body>
 </html>

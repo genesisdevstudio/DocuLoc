@@ -242,6 +242,7 @@
                     </div>
 
                     <div class="row mt-4">
+                        <input type="hidden" name="token_case" value="<?=$token_case;?>">
                         <input class="btn btn-success" type="submit" name="save_locador" value="Enviar Dados">
                     </div>
                 </div>

@@ -19,13 +19,13 @@
         session_start();
         session_destroy();
 
-        header('location: .'.PATHURL.'login.php');
+        header('location: .'.PATHURL);
         exit();
     }
 
     function validate() {
         if ($_COOKIE['token'] == '' || empty($_COOKIE['token']) || !isset($_COOKIE['token'])) {
-            header('location: .'.PATHURL.'login.php');
+            header('location: .'.PATHURL);
             exit();
         }
     }
@@ -67,7 +67,7 @@
         } else {
             $return_data = array(
                 'code' => 201,
-                'message' => "Caso criado com sucesso! Código do caso é {$datas['token_case']}"
+                'message' => 'Criado com sucesso!'
             );
         }
 
@@ -329,13 +329,14 @@
             ->writerOptions([])
             ->data($url)
             ->encoding(new Encoding('UTF-8'))
-            ->errorCorrectionLevel(new ErrorCorrectionLevel('High'))
+            // ->errorCorrectionLevel(new ErrorCorrectionLevel(ErrorCorrectionLevel::High))
             ->size(300)
             ->margin(10)
             ->build();
 
         // Define o caminho onde a imagem será salva
-        $outputFile = "../docs/cases/{$case}/qrcode-{$type}.png";
+        mkdir("../docs/cases/{$case}/", 0777, true);
+        $outputFile = "../docs/cases/{$case}/qrcode-{$type}-{$case}.png";
 
         // Salva a imagem em um arquivo
         $result->saveToFile($outputFile);
@@ -391,10 +392,10 @@
         $where_params['column_name'] = 'token_case';
 
         $table_name = 'cases';
-        updateOnDB($datas, $table_name, $where_params);
+        return updateOnDB($datas, $table_name, $where_params);
     }
 
-    function uploadDocumentToCloudinary($filePath=null)
+    function uploadDocumentToCloudinary($filePath=null, $case=null, $name_doc=null, $type=null)
     {
         // Configura as credenciais da Cloudinary
         Configuration::instance([
@@ -410,10 +411,63 @@
     
         // Realiza o upload do arquivo para a Cloudinary
         $uploadResult = (new UploadApi())->upload($filePath, [
-            'folder' => 'qrcodes'
+            'folder' => 'cases_documents'
         ]);
+
+        // Delete image from local storage
+        unlink($filePath);
+
+        // Salve a URL no banco de dados
+        $datas['url_document'] = $uploadResult['secure_url'];
+        $datas['name_document'] = $name_doc;
+        $datas['profile_document'] = $type;
+        $datas['token_case'] = $case;
+
+        $table_name = 'cases_documents';
+        return saveOnDB($datas, $table_name);
+    }
+
+    function salvarArquivosCarregados($files, $destino, $token_case) {
+        // Verifica se o diretório de destino existe, se não, cria o diretório
+        
+        if (!is_dir($destino)) {
+            mkdir($destino, 0777, true);
+        }
     
-        // Retorna a URL do arquivo na Cloudinary
-        return $uploadResult['secure_url'];
+        // Array para armazenar os resultados do upload
+        $resultados = [];
+    
+        // Percorre todos os arquivos em $_FILES
+        foreach ($files as $campo => $arquivo) {
+            // Verifica se foi carregado sem erros
+            if ($arquivo['error'] === UPLOAD_ERR_OK) {
+                $nomeTemporario = $arquivo['tmp_name'];
+                $extensao = pathinfo($arquivo['name'], PATHINFO_EXTENSION);
+                $nomeArquivo = $campo . '_' . $token_case . '.' . $extensao;
+                $caminhoDestino = $destino . DIRECTORY_SEPARATOR . $nomeArquivo;
+    
+                // Move o arquivo para o destino
+                if (move_uploaded_file($nomeTemporario, $caminhoDestino)) {
+                    // Obtém a URL do arquivo
+                    $urlArquivo = WEBURL . '/' . str_replace('../', '', $destino) . $nomeArquivo;
+                    $resultados[$campo] = [
+                        "message" => "Arquivo '$nomeArquivo' carregado com sucesso.",
+                        "url_final" => $urlArquivo
+                    ];
+                } else {
+                    $resultados[$campo] = [
+                        "message" => "Erro ao mover o arquivo '$nomeArquivo'.",
+                        "url_final" => null
+                    ];
+                }
+            } else {
+                $resultados[$campo] = [
+                    "message" => "Erro no upload do arquivo '$arquivo[name]'. Código de erro: " . $arquivo['error'],
+                    "url_final" => null
+                ];
+            }
+        }
+    
+        return $resultados;
     }
 ?>
