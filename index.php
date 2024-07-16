@@ -1,7 +1,4 @@
 <?php
-    http_response_code(503);
-    exit();
-    
     include($_SERVER['DOCUMENT_ROOT'].'/lib/config.php');
     include($_SERVER['DOCUMENT_ROOT'].'/lib/conn.php');
     include($_SERVER['DOCUMENT_ROOT'].'/lib/enviar-email.php');

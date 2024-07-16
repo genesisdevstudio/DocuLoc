@@ -180,7 +180,7 @@
                         <div class="col-md-3">
                             <div class="form-group">
                                 <label for="valor-imovel" class="form-control-label">Valor do aluguel<span class="text-danger">&nbsp;*</span></label>
-                                <input id="valor-imovel" class="form-control mask_money" name="dados_imovel_valo_aluguel" type="text" placeholder="Ex: 1.600,00" required>
+                                <input id="valor-imovel" class="form-control mask_money" name="dados_imovel_valor_aluguel" type="text" placeholder="Ex: 1.600,00" required>
                             </div>
                         </div>
 
@@ -242,6 +242,7 @@
                     </div>
 
                     <div class="row mt-4">
+                        <input type="hidden" name="token_case" value="<?=$token_case;?>">
                         <input class="btn btn-success" type="submit" name="save_locador" value="Enviar Dados">
                     </div>
                 </div>

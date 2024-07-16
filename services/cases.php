@@ -22,8 +22,21 @@
             $code = $save_request['code'];
             $message = $save_request['message'];
 
-            header("location: ../pages/cases.php?code={$code}&msg={$message}");
-            exit();
+            if ($code == 201) {
+                $token_case = $received_form['token_case'];
+                $url_locador = WEBURL . '/pages/locador.php?case=' . $token_case;
+                $url_locatario = WEBURL . '/pages/locatario.php?case=' . $token_case;
+
+                $qr_code_locador = generateAndUploadQRCode($url_locador, $token_case, 'locador');
+                $qr_code_locatario = generateAndUploadQRCode($url_locatario, $token_case, 'locatario');
+                
+                $message .= " Código do caso é {$token_case}";
+                header("location: ../pages/cases.php?code={$code}&msg={$message}");
+                exit();
+            } else {
+                header("location: ../pages/cases.php?code={$code}&msg={$message}");
+                exit();
+            }
         }
     }
 

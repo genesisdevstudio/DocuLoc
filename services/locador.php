@@ -5,11 +5,16 @@
 
     if ($_REQUEST['save_locador']) {
         $received_form = $_REQUEST;
-        $received_files = $_FILES;
+        $token_case = $_REQUEST['token_case'];
+        $received_files = salvarArquivosCarregados($_FILES, "../docs/cases/{$token_case}/", $token_case);
         unset($received_form['save_locador']);
 
-        echo '<pre>' . print_r($received_files, true) . '</pre><hr>';
-        echo '<pre>' . print_r($received_form, true) . '</pre><hr>';
+        foreach ($received_files as $name_doc => $contents) {
+            if (!empty($contents['url_final'])) {
+                $filePath = str_replace(WEBURL, '..', $contents['url_final']);
+                uploadDocumentToCloudinary($filePath, $token_case, $name_doc, 'locador');
+            }
+        }
 
         foreach ($received_form as $key => $value) {
             if (strstr($key, 'info_pessoa_')) {
@@ -28,49 +33,59 @@
         }
 
         $token_pessoa = md5($info_pessoa['cpf'] . $contato['email'] . date('Y-m-d H:i:s'));
-        $info_pessoa['tipo'] = 'locador';
+        $info_pessoa['tipo'] = '1';
         $info_pessoa['token'] = $token_pessoa;
         $contato['token_pessoa'] = $token_pessoa;
         $dados_bancarios['token_pessoa'] = $token_pessoa;
-        $dados_imovel['token_pessoa'] = $token_pessoa;
-
-        echo '<pre>' . print_r($info_pessoa, true) . '</pre><hr>';
-        echo '<pre>'. print_r($contato, true). '</pre><hr>';
-        echo '<pre>'. print_r($dados_bancarios, true). '</pre><hr>';
-        echo '<pre>'. print_r($dados_imovel, true). '</pre>';
+        $dados_imovel['proprietario'] = $token_pessoa;
         
-        exit();
-        // $received_form['token_case'] = substr(md5(date('Y-m-d H:i:s')), 0, 8);
-        // $received_form['creator'] = $_COOKIE['token'];
+        $table_name = 'info_pessoa';
+        $save_request = saveOnDB($info_pessoa, $table_name);
 
-        // if (in_array($received_form['tipo_garantia'], $need_attach)) {
-        //     $received_form['status'] = 'waiting_attach';
-        // }
-        
-        // $table_name = 'cases';
-        // $save_request = saveOnDB($received_form, $table_name);
+        if (is_array($save_request) && $save_request['code'] != 201) {
+            $code = $save_request['code'];
+            $message = $save_request['message'];
 
-        // if (is_array($save_request)) {
-        //     $code = $save_request['code'];
-        //     $message = $save_request['message'];
-
-        //     header("location: ../pages/cases.php?code={$code}&msg={$message}");
-        //     exit();
-        // }
-    }
-
-    if ($_REQUEST['delete_case']) {
-        $table_name = 'cases';
-
-        $case = $_REQUEST['token_case'];
-        $delete_request = deleteOnDB($case, $table_name);
-
-        if (is_array($delete_request)) {
-            $code = $delete_request['code'];
-            $message = $delete_request['message'];
-
-            header("location: ../pages/cases.php?code={$code}&msg={$message}");
+            header("location: ../pages/locador.php?code={$code}&msg={$message}");
             exit();
+        } else {
+            $table_name = 'contato';
+            $save_request = saveOnDB($contato, $table_name);
+    
+            if (is_array($save_request) && $save_request['code'] != 201) {
+                $code = $save_request['code'];
+                $message = $save_request['message'];
+    
+                header("location: ../pages/locador.php?code={$code}&msg={$message}");
+                exit();
+            } else {
+                $table_name = 'dados_bancarios';
+                $save_request = saveOnDB($dados_bancarios, $table_name);
+        
+                if (is_array($save_request) && $save_request['code'] != 201) {
+                    $code = $save_request['code'];
+                    $message = $save_request['message'];
+        
+                    header("location: ../pages/locador.php?code={$code}&msg={$message}");
+                    exit();
+                } else {
+                    $table_name = 'dados_imovel';
+                    $save_request = saveOnDB($dados_imovel, $table_name);
+            
+                    if (is_array($save_request) && $save_request['code'] != 201) {
+                        $code = $save_request['code'];
+                        $message = $save_request['message'];
+            
+                        header("location: ../pages/locador.php?code={$code}&msg={$message}");
+                        exit();
+                    } else {
+                        $message = "Seus dados foram salvos com sucesso.<br>Daremos continuidade no seu caso.";
+
+                        header("location: ../pages/success.php?code={$code}&msg={$message}");
+                        exit();
+                    }
+                }
+            }
         }
     }
     
