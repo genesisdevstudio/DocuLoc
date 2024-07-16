@@ -1,7 +1,7 @@
 <div class="row max-w-80 mx-auto">
     <div class="col-12 d-flex justify-content-between mt-4">
         <img src="../../../assets/img/logos/logotipo.png" class="w-10" alt="logo doculoc" />
-        <img src="#" alt="logo imoboliaria" />
+        <!-- <img src="#" alt="logo imoboliaria" /> -->
     </div>
 
     <div class="col-12 text-center">
