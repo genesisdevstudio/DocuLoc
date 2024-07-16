@@ -180,7 +180,7 @@
                         <div class="col-md-3">
                             <div class="form-group">
                                 <label for="valor-imovel" class="form-control-label">Valor do aluguel<span class="text-danger">&nbsp;*</span></label>
-                                <input id="valor-imovel" class="form-control mask_money" name="dados_imovel_valo_aluguel" type="text" placeholder="Ex: 1.600,00" required>
+                                <input id="valor-imovel" class="form-control mask_money" name="dados_imovel_valor_aluguel" type="text" placeholder="Ex: 1.600,00" required>
                             </div>
                         </div>
 
